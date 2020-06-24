@@ -1,3 +1,5 @@
+> This repository contains reproduction of UNetPluPlus upon the dataset obtained from KITS19 Kidney Tumor Segmentation Challenge.
+
 ***Original Work can be found at: <a href = "https://github.com/MrGiovanni/UNetPlusPlus"> UNetPlusPlus Official Repository </a>***
 
 
