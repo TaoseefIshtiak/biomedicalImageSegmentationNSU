@@ -1,4 +1,4 @@
-***Original Work can be found at: <a href = "https://github.com/MrGiovanni/UNetPlusPlus"> UNet Plus Plus Official Repository </a>***
+***Original Work can be found at: <a href = "https://github.com/MrGiovanni/UNetPlusPlus"> UNetPlusPlus Official Repository </a>***
 
 
 **Requirements**
