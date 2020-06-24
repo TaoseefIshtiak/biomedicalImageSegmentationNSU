@@ -1,4 +1,6 @@
-***Original Work can be found at: https://github.com/MrGiovanni/UNetPlusPlus***
+***Original Work can be found at: <a href = "https://github.com/MrGiovanni/UNetPlusPlus"> UNet Plus Plus Official Repository </a>***
+
+
 **Requirements**
 - tensorflow-gpu==1.4.1
 - keras==2.2.2
