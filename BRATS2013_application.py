@@ -12,16 +12,24 @@ CUDA_VISIBLE_DEVICES=2 python -W ignore BRATS2013_application.py \
 --data /mnt/dataset/shared/zongwei/BRATS2013/npy
 """
 
+"""
+CUDA_VISIBLE_DEVICES=0 python -W ignore BRATS2013_application.py --run 1 --arch Nestnet --backbone vgg16 --init random --verbose 1 --nb_class 2 --data data/x_train/
+"""
+
+
+
+
 # Keras==2.2.2
 # tensorflow-gpu==1.4.1
-from __future__ import print_function
-import warnings
-warnings.filterwarnings('ignore')
+
 import os
+#from __future__ import print_function
+#import warnings
+#warnings.filterwarnings('ignore')
 import keras
-print("Keras = {}".format(keras.__version__))
+#print("Keras = {}".format(keras.__version__))
 import tensorflow as tf
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # or any {'0', '1', '2'}
+#s.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # or any {'0', '1', '2'}
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 import numpy as np
@@ -104,7 +112,7 @@ class setup_config():
     optimizer = "Adam"
     lr = 1e-4
     GPU_COUNT = 1
-    nb_epoch = 100000
+    nb_epoch = 100
     patience = 30
     deep_supervision = False
     def __init__(self, model="", 
@@ -165,29 +173,63 @@ config.display()
 # In[3]:
 
 
-x_train = np.load(os.path.join(config.DATA_DIR, "BRATS2013_Syn_Flair_Train_X.npy")) #new data needs to be loaded
-y_train = np.load(os.path.join(config.DATA_DIR, "BRATS2013_Syn_Flair_Train_S.npy"))
+x_train = np.load(os.path.join(config.DATA_DIR, "x_train_3_chnl.npy")) #new data needs to be loaded
+y_train = np.load(os.path.join(config.DATA_DIR, "y_train_3_chnl.npy"))
 nb_cases = x_train.shape[0]
 ind_list = [i for i in range(nb_cases)]
 shuffle(ind_list)
 nb_valid = int(nb_cases*0.2)
 x_valid, y_valid = x_train[ind_list[:nb_valid]], y_train[ind_list[:nb_valid]]
 x_train, y_train = x_train[ind_list[nb_valid:]], y_train[ind_list[nb_valid:]]
-x_train, y_train = np.einsum('ijkl->iklj', x_train), np.einsum('ijkl->iklj', y_train)
-x_valid, y_valid = np.einsum('ijkl->iklj', x_valid), np.einsum('ijkl->iklj', y_valid)
-y_train = np.array(y_train>0, dtype="int")[:,:,:,0:1]
-y_valid = np.array(y_valid>0, dtype="int")[:,:,:,0:1]
+
+
+# #elahi start
+# x_train = np.expand_dims(x_train, axis=0)
+# x_train = np.einsum('ijkl->jkli',x_train)
+# x_valid = np.expand_dims(x_valid, axis=0)
+# x_valid = np.einsum('ijkl->jkli',x_valid)
+# #elahi end
+
+print ('before')
+print(x_train.shape)
+print(y_train.shape)
+print("\n")
+# x_train, y_train = np.einsum('ijkl->iklj', x_train), np.einsum('ijkl->iklj', y_train)
+# x_valid, y_valid = np.einsum('ijkl->iklj', x_valid), np.einsum('ijkl->iklj', y_valid)
+y_train = np.einsum('ijk->ikj', y_train)
+y_valid = np.einsum('ijk->ikj', y_valid)
+print ('after')
+print(x_valid.shape)
+print(y_valid.shape)
+print("\n")
+
+
+
+#x_valid, y_valid = np.einsum('ijkl->iklj', x_valid), np.einsum('ijkl->iklj', y_valid)
+
+#elahi start
+#x_valid, y_valid = np.einsum('ijk->ikj', x_valid), np.einsum('ijk->ikj', y_valid)
+#elahi end
+
+#EDIT DEPEND ON dIMENSIONS
+#y_train = np.array(y_train>0, dtype="int")[:,:,:,0:1]
+
+#EDIT DEPEND ON dIMENSIONS
+#y_valid = np.array(y_valid>0, dtype="int")[:,:,:,0:1]
+
+
 print(">> Train data: {} | {} ~ {}".format(x_train.shape, np.min(x_train), np.max(x_train)))
 print(">> Train mask: {} | {} ~ {}\n".format(y_train.shape, np.min(y_train), np.max(y_train)))
 print(">> Valid data: {} | {} ~ {}".format(x_valid.shape, np.min(x_valid), np.max(x_valid)))
 print(">> Valid mask: {} | {} ~ {}\n".format(y_valid.shape, np.min(y_valid), np.max(y_valid)))
 
-x_test = np.load(os.path.join(config.DATA_DIR, "BRATS2013_Syn_Flair_Test_X.npy"))
-y_test = np.load(os.path.join(config.DATA_DIR, "BRATS2013_Syn_Flair_Test_S.npy"))
-x_test, y_test = np.einsum('ijkl->iklj', x_test), np.einsum('ijkl->iklj', y_test)
-y_test = np.array(y_test>0, dtype="int")[:,:,:,0:1]
-print(">> Test  data: {} | {} ~ {}".format(x_test.shape, np.min(x_test), np.max(x_test)))
-print(">> Test  mask: {} | {} ~ {}\n".format(y_test.shape, np.min(y_test), np.max(y_test)))
+
+# x_test = np.load(os.path.join(config.DATA_DIR, "BRATS2013_Syn_Flair_Test_X.npy"))
+# y_test = np.load(os.path.join(config.DATA_DIR, "BRATS2013_Syn_Flair_Test_S.npy"))
+# x_test, y_test = np.einsum('ijkl->iklj', x_test), np.einsum('ijkl->iklj', y_test)
+# y_test = np.array(y_test>0, dtype="int")[:,:,:,0:1]
+# print(">> Test  data: {} | {} ~ {}".format(x_test.shape, np.min(x_test), np.max(x_test)))
+# print(">> Test  mask: {} | {} ~ {}\n".format(y_test.shape, np.min(y_test), np.max(y_test)))
 
 
 # # UNet++
@@ -235,21 +277,34 @@ tbCallBack = TensorBoard(log_dir=os.path.join(logs_path, config.exp_name),
                          write_graph=True, 
                          write_images=True,
                         )
-tbCallBack.set_model(model)    
+tbCallBack.set_model(model)
+print("------------->>>>>>>")
+print(tbCallBack)
 
 early_stopping = keras.callbacks.EarlyStopping(monitor='val_loss', 
                                                patience=config.patience, 
                                                verbose=0,
                                                mode='min',
                                               )
+
+print(early_stopping)
+
+
 check_point = keras.callbacks.ModelCheckpoint(os.path.join(model_path, config.exp_name+".h5"),
                                               monitor='val_loss', 
                                               verbose=1, 
                                               save_best_only=True, 
                                               mode='min',
                                              )
+
+
+print(check_point)
+
+
+
 callbacks = [check_point, early_stopping, tbCallBack]
 
+print(model.summary())
 
 while config.batch_size > 1:
     # To find a largest batch size that can be fit into GPU
@@ -260,7 +315,8 @@ while config.batch_size > 1:
                     verbose=config.verbose, 
                     shuffle=True,
                     validation_data=(x_valid, y_valid),
-                    callbacks=callbacks)
+                    callbacks=callbacks
+                )
         break
     except tf.errors.ResourceExhaustedError as e:
         config.batch_size = int(config.batch_size / 2.0)
@@ -287,13 +343,13 @@ elif config.model == "Xnet":
                  activation=config.activation)
 else:
     raise
-model.load_weights(os.path.join(model_path, config.exp_name+".h5"))
-model.compile(optimizer="Adam", 
-              loss=dice_coef_loss, 
-              metrics=["binary_crossentropy", mean_iou, dice_coef])
-p_test = model.predict(x_test, batch_size=config.batch_size, verbose=config.verbose)
-eva = model.evaluate(x_test, y_test, batch_size=config.batch_size, verbose=config.verbose)
-IoU = compute_iou(y_test, p_test)
-print("\nSetup: {}".format(config.exp_name))
-print(">> Testing dataset mIoU  = {:.2f}%".format(np.mean(IoU)))
-print(">> Testing dataset mDice = {:.2f}%".format(eva[3]*100.0))
+# model.load_weights(os.path.join(model_path, config.exp_name+".h5"))
+# model.compile(optimizer="Adam", 
+#               loss=dice_coef_loss, 
+#               metrics=["binary_crossentropy", mean_iou, dice_coef])
+# p_test = model.predict(x_test, batch_size=config.batch_size, verbose=config.verbose)
+# eva = model.evaluate(x_test, y_test, batch_size=config.batch_size, verbose=config.verbose)
+# IoU = compute_iou(y_test, p_test)
+#print("\nSetup: {}".format(config.exp_name))
+# print(">> Testing dataset mIoU  = {:.2f}%".format(np.mean(IoU)))
+# print(">> Testing dataset mDice = {:.2f}%".format(eva[3]*100.0))
